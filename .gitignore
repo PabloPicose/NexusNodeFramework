@@ -1,2 +1,4 @@
 cmake-build*/
 vcpkg*/
+.idea/
+.vscode/
