@@ -1,0 +1,18 @@
+{
+  "name": "poacs",
+  "version": "0.1.0",
+  "builtin-baseline": "59aeb8fe8fe1c980de6bd5ba634cf21024522d81",
+  "dependencies": [
+    {
+      "name": "boost-asio",
+      "version>=": "1.85.0"
+    },
+    {
+      "name": "boost-signals2",
+      "version>=": "1.85.0"
+    },
+    "gtest",
+    "sfml",
+    "crow"
+  ]
+}
