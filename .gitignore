@@ -2,3 +2,5 @@ cmake-build*/
 vcpkg*/
 .idea/
 .vscode/
+build*/
+compile_commands.json

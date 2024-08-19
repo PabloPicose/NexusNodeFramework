@@ -2,6 +2,9 @@
   "dependencies": [
     "boost-signals2",
     "boost-asio",
-    "gtest"
+    "gtest",
+    "glfw3",
+    "glad",
+    "glm"
   ]
 }
