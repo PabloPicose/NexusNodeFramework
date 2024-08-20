@@ -14,7 +14,9 @@ namespace IRC {
 
         ~TcpSocket() override;
 
-        void connect(const std::string& host, unsigned short port);
+        void connect(const std::string& host, unsigned short port) override;
+
+        bool waitForConnected(int milliseconds = -1);
 
         unsigned short getRemotePort() const;
 
@@ -45,6 +47,6 @@ namespace IRC {
         std::vector<char> m_readBuffer;
         bool m_connected = false;
     };
-} // IRC
+} // namespace IRC
 
-#endif //TCPSOCKET_H
+#endif // TCPSOCKET_H

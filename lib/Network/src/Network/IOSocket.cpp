@@ -4,12 +4,10 @@
 
 #include "IOSocket.h"
 
-#include "IOContext.h"
 #include <sys/socket.h>
 
 namespace IRC {
-    IOSocket::~IOSocket() {
-    }
+    IOSocket::~IOSocket() {}
 
     int64_t IOSocket::write(const char* data, const std::size_t max_size) {
         const auto optfd = getFileDescriptor();
@@ -24,13 +22,9 @@ namespace IRC {
         return -1;
     }
 
-    int64_t IOSocket::write(const std::vector<char>& data) {
-        return write(data.data(), data.size());
-    }
+    int64_t IOSocket::write(const std::vector<char>& data) { return write(data.data(), data.size()); }
 
-    int64_t IOSocket::write(const char* data) {
-        return write(data, std::strlen(data));
-    }
+    int64_t IOSocket::write(const char* data) { return write(data, std::strlen(data)); }
 
     std::vector<char> IOSocket::readAll() {
         std::vector<char> buffer;
@@ -65,8 +59,7 @@ namespace IRC {
         return buffer;
     }
 
-    IOSocket::IOSocket(Node* parent) :
-        AbstractSocket(parent) {
+    IOSocket::IOSocket(Node* parent) : AbstractSocket(parent) {
         inEvent.connect(boost::bind(&IOSocket::onInEvent, this));
     }
 
@@ -78,4 +71,4 @@ namespace IRC {
         }
     }
 
-} // IRC
+} // namespace IRC

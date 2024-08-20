@@ -37,6 +37,10 @@ namespace IRC {
 
         std::optional<int> getFD() const;
 
+        void processFD(FileDescriptor fd,
+                       EventFlags events,
+                       int milliseconds = -1);
+
     protected:
         void update() override;
 
@@ -56,11 +60,15 @@ namespace IRC {
 
         bool unregisterSocketInEPoll(int fd);
 
+        void processEpoll(int milliseconds = -1);
+
     private:
         std::optional<int> m_fd = -1;
         static IOContext* m_instance;
         int m_fd_count = 0;
         std::array<epoll_event, 15> m_events;
+        //! Stores all the file descriptors and its events in this context
+        std::unordered_map<int, int> m_mapFD_Events;
     };
 } // namespace IRC
 

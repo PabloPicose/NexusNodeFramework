@@ -125,5 +125,17 @@ namespace IRC {
         setConnected(false);
         this->close();
     }
+    bool TcpSocket::waitForConnected(const int milliseconds) {
+        if (!getFileDescriptor().has_value()) {
+            std::cerr << "TcpSocket::waitForConnected: TcpSocket without FD" << std::endl;
+        }
+        if (!getIOContext()) {
+            std::cerr << "TcpSocket::waitForConnected: IO Context not created" << std::endl;
+        }
+        getIOContext()->processFD(getFileDescriptor().value(),
+                                  IOContext::Event::Out,
+                                  milliseconds);
+        return getIsConnected();
+    }
 
 } // IRC

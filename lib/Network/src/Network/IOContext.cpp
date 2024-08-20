@@ -24,21 +24,7 @@ namespace IRC {
     }
 
     void IOContext::update() {
-        if (m_fd_count > 0) {
-            const int n = epoll_wait(m_fd.value(), m_events.data(), m_events.size(), 0);
-            for (int i = 0; i < n; i++) {
-                const auto& ev = m_events[i];
-                if (ev.events & EPOLLIN) {
-                    eventOccur(ev.data.fd, In);
-                }
-                if (ev.events & EPOLLOUT) {
-                    eventOccur(ev.data.fd, Out);
-                }
-                if (ev.events & EPOLLRDHUP) {
-                    eventOccur(ev.data.fd, RdHup);
-                }
-            }
-        }
+        processEpoll(0);
     }
 
     IOContext::IOContext(Node* parent) :
@@ -77,6 +63,7 @@ namespace IRC {
             std::cerr << "Failed to register socket" << std::endl;
             return false;
         }
+        m_mapFD_Events.insert({fd, events});
         m_fd_count++;
         return true;
     }
@@ -100,6 +87,7 @@ namespace IRC {
             std::cerr << "Failed to modify socket" << std::endl;
             return false;
         }
+        m_mapFD_Events[fd] = events;
         return true;
     }
 
@@ -109,6 +97,57 @@ namespace IRC {
             return false;
         }
         m_fd_count--;
+        m_mapFD_Events.erase(fd);
         return true;
     }
+
+    void IOContext::processFD(IOContext::FileDescriptor fd,
+                              IOContext::EventFlags events,
+                              int milliseconds) {
+        // If the File Descriptor is not registered ends the function
+        if (!m_mapFD_Events.contains(fd)) {
+            std::cerr << "IOContext::processFD: file descriptor not registered" << std::endl;
+            return;
+        }
+        const auto copyMapFD = m_mapFD_Events;
+        // For each FD in the map unregister it except the fd
+        for (auto it : copyMapFD) {
+            if (it.first != fd) {
+                unregisterSocketInEPoll(it.first);
+            }
+        }
+        // Modify the input FD
+        modifySocketEventsInEPoll(fd, events);
+
+        // process the epoll and check if the events had been occurred
+        processEpoll(milliseconds);
+        // restore the epoll file descriptors
+        for (auto it : copyMapFD) {
+            if (it.first != fd) {
+                registerSocketInEPoll(it.first, it.second);
+            }
+        }
+        // restore the previous state of the incoming fd
+        modifySocketEventsInEPoll(fd,copyMapFD.at(fd));
+    }
+    void IOContext::processEpoll(int milliseconds) {
+        if (m_fd_count > 0) {
+            const int n = epoll_wait(m_fd.value(),
+                                     m_events.data(), m_events.size(),
+                                     milliseconds);
+            for (int i = 0; i < n; i++) {
+                const auto& ev = m_events[i];
+                if (ev.events & EPOLLIN) {
+                    eventOccur(ev.data.fd, In);
+                }
+                if (ev.events & EPOLLOUT) {
+                    eventOccur(ev.data.fd, Out);
+                }
+                if (ev.events & EPOLLRDHUP) {
+                    eventOccur(ev.data.fd, RdHup);
+                }
+            }
+        }
+    }
+
 } // IRC

@@ -27,13 +27,26 @@ namespace IRC {
             std::cerr << "Failed to create socket" << std::endl;
             return false;
         }
+        // Under Unix, we want to be able to bind to the port, even if a socket on
+        // the same address-port is in TIME_WAIT. Under Windows this is possible
+        // anyway -- furthermore, the meaning of reusable on Windows is different:
+        // it means that you can use the same address-port for multiple listening
+        // sockets.
+        // Don't abort though if we can't set that option. For example the socks
+        // engine doesn't support that option, but that shouldn't prevent us from
+        // trying to bind/listen.
+        int optval = 1;
+        if (setsockopt(server_fd,
+                       SOL_SOCKET, SO_REUSEADDR,
+                       &optval, sizeof(optval)) < 0) {
+            std::cerr << "Failed to REUSE ADDR option on the server socket" << std::endl;
+        }
         sockaddr_in addr = {};
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = INADDR_ANY;
         if (bind(server_fd, (sockaddr*) &addr, sizeof(addr)) == -1) {
             // TODO check errors
-            std::cerr << "TcpServer::listen: Failed to bind socket" << std::endl;
             ::close(server_fd);
             return false;
         }
