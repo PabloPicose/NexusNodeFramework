@@ -10,11 +10,11 @@ add_executable(POACS main.cpp)
 
 add_subdirectory(lib/Core)
 add_subdirectory(lib/Network)
+add_subdirectory(lib/Graphics)
 
 target_link_libraries(POACS PRIVATE IRCCore IRCNetwork)
 
 add_subdirectory(tests)
 
-# # TEST CLIENT
-add_executable(POACS_TEST_CLIENT test_client.cpp)
-
+add_executable(graphics_test test_graphics.cpp)
+target_link_libraries(graphics_test IRCGraphics)
