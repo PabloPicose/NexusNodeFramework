@@ -7,21 +7,20 @@
   },
   "configurePresets": [
     {
-      "name": "debug",
+      "name": "default-debug",
       "hidden": false,
       "generator": "Ninja",
-      "description": "Use this preset for Debug builds with Conan dependencies",
-      "binaryDir": "${sourceDir}/build/Debug",
+      "description": "Use this preset for Debug builds",
+      "binaryDir": "${sourceDir}/cmake_build/Debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     }
   ],
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "debug"
+      "configurePreset": "default-debug"
     }
   ]
 }

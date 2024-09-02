@@ -1,8 +1,9 @@
 cmake-build*/*
-cmake-build/
+cmake_build*/*
 vcpkg*/
 .idea/
 .vscode/
 build*/
 compile_commands.json
 .cache/
+CMakeUserPresets.json
