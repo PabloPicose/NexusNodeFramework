@@ -1,4 +1,5 @@
 cmake-build*/
+cmake-build/
 vcpkg*/
 .idea/
 .vscode/
