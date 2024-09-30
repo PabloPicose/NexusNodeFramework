@@ -19,7 +19,9 @@ namespace IRC {
 
         ~Application();
 
-        static Application *instance();
+        std::string getFullExecutablePath() const;
+
+        static Application* instance();
 
         static std::thread::id threadId();
 
@@ -38,7 +40,7 @@ namespace IRC {
          * @param node The node pointer to check
          * @return True if the node memory is accessible, false otherwise
          */
-        bool isNodeAlive(Node *node) const;
+        bool isNodeAlive(Node* node) const;
 
         /**
          * @brief Gets if the node pointer is marked to be deleted. If the node is marked to be deleted OR
@@ -47,7 +49,7 @@ namespace IRC {
          * @param node The node pointer to check
          * @return True if the node is marked to be deleted OR the node is not memory accessible, false otherwise.
          */
-        bool isNodeMarkedToDelete(Node *node) const;
+        bool isNodeMarkedToDelete(Node* node) const;
 
         size_t getRootNodesToDeleteCount() const;
 
@@ -56,31 +58,31 @@ namespace IRC {
         size_t getAliveNodesToDeleteCount() const;
 
     private:
-        void pushRootNode(Node *node);
+        void pushRootNode(Node* node);
 
-        void pushRootNodeDeleteLater(Node *node);
+        void pushRootNodeDeleteLater(Node* node);
 
-        void removeRootNode(Node *node);
+        void removeRootNode(Node* node);
 
         //! This function must be called in the constructor of the Node class.
         //! Creates a key in the map with the node and the boolean value to true
-        void registerAliveNode(Node *node);
+        void registerAliveNode(Node* node);
 
         //! This function marks to false the boolean value of the node in the map
         //! to know that the node is marked to be deleted
-        void markToDelete(Node *node);
+        void markToDelete(Node* node);
 
         //! This function must be called in the destructor of the Node class
-        void unregisterAliveNode(Node *node);
+        void unregisterAliveNode(Node* node);
 
     private:
         friend class Node;
-        static Application *m_instance;
+        static Application* m_instance;
 
-        std::vector<Node *> m_rootNodes;
+        std::vector<Node*> m_rootNodes;
         std::thread::id m_threadId;
 
-        std::vector<Node *> m_rootNodesToDelete;
+        std::vector<Node*> m_rootNodesToDelete;
 
         //! This map is used to keep the nodes alive. The boolean value is used to know if
         //! the node is marked to be deleted.
@@ -88,6 +90,6 @@ namespace IRC {
 
         bool m_quit = false;
     };
-} // IRC
+} // namespace IRC
 
-#endif //APPLICATION_H
+#endif // APPLICATION_H

@@ -8,19 +8,13 @@
   "configurePresets": [
     {
       "name": "default-debug",
-      "hidden": false,
+      "hidden": true,
       "generator": "Ninja",
       "description": "Use this preset for Debug builds",
       "binaryDir": "${sourceDir}/cmake_build/Debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "debug",
-      "configurePreset": "default-debug"
     }
   ]
 }

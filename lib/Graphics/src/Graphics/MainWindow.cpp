@@ -53,31 +53,39 @@ namespace IRC {
         if (!m_shown) {
             return;
         }
-        // input
-        // -----
-        processInput(m_window);
+        processInput();
+        clear();
+        // render ---
 
-        // render
-        // ------
+
+        swapBuffers();
+    }
+    void MainWindow::show() { m_shown = true; }
+
+    MainWindow::~MainWindow() { glfwTerminate(); }
+
+    void MainWindow::__processInput(GLFWwindow* window) {
+        m_lastKeyPressed = glfwGetKey(window, GLFW_KEY_ESCAPE);
+        if (m_lastKeyPressed == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, true);
+        }
+    }
+
+    void MainWindow::clear() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+    }
 
+    void MainWindow::processInput() { __processInput(m_window); }
+
+    void MainWindow::swapBuffers() {
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(m_window);
         glfwPollEvents();
     }
-    void MainWindow::show() { m_shown = true; }
+    int MainWindow::getLastKeyPressed() const { return m_lastKeyPressed; }
 
-
-    MainWindow::~MainWindow() { glfwTerminate(); }
-
-    void MainWindow::processInput(GLFWwindow* window) {
-
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            // glfwSetWindowShouldClose(window, true);
-            Application::instance()->quit();
-        }
-    }
+    bool MainWindow::shouldClose() const { return glfwWindowShouldClose(m_window); }
 
 } // namespace IRC

@@ -17,14 +17,25 @@ namespace IRC {
 
         ~MainWindow() override;
 
+        void clear();
+
+        void processInput();
+
+        void swapBuffers();
+
+        int getLastKeyPressed() const;
+
+        bool shouldClose() const;
+
     private:
-        void processInput(GLFWwindow* window);
+        void __processInput(GLFWwindow* window);
 
     private:
         bool m_shown = false;
         int m_width = 800;
         int m_height = 600;
         GLFWwindow* m_window = nullptr;
+        int m_lastKeyPressed = -1;
     };
 } // namespace IRC
 

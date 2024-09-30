@@ -10,8 +10,7 @@
 namespace IRC {
     Application* Application::m_instance = nullptr;
 
-    Application::Application() :
-        m_threadId(std::this_thread::get_id()) {
+    Application::Application() : m_threadId(std::this_thread::get_id()) {
         if (m_instance) {
             throw std::runtime_error("Only one instance of Application is allowed");
         } else {
@@ -29,13 +28,17 @@ namespace IRC {
         m_instance = nullptr;
     }
 
-    Application* Application::instance() {
-        return m_instance;
+
+    std::string Application::getFullExecutablePath() const {
+        // linux
+        char result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        return (count != -1) ? std::string(result, count) : std::string();
     }
 
-    std::thread::id Application::threadId() {
-        return std::this_thread::get_id();
-    }
+    Application* Application::instance() { return m_instance; }
+
+    std::thread::id Application::threadId() { return std::this_thread::get_id(); }
 
     void Application::loopOnce() {
         // controlls the nodes to delete
@@ -54,18 +57,14 @@ namespace IRC {
 
     int Application::run() {
         while (!m_quit && m_rootNodes.size() > 0) {
-           loopOnce();
+            loopOnce();
         }
         return 0;
     }
 
-    void Application::quit() {
-        m_quit = true;
-    }
+    void Application::quit() { m_quit = true; }
 
-    std::size_t Application::getRootNodesCount() const {
-        return m_rootNodes.size();
-    }
+    std::size_t Application::getRootNodesCount() const { return m_rootNodes.size(); }
 
     Node* Application::getRootNode(const std::size_t index) const {
         if (index < m_rootNodes.size()) {
@@ -88,13 +87,9 @@ namespace IRC {
         return true;
     }
 
-    size_t Application::getRootNodesToDeleteCount() const {
-        return m_rootNodesToDelete.size();
-    }
+    size_t Application::getRootNodesToDeleteCount() const { return m_rootNodesToDelete.size(); }
 
-    size_t Application::getAliveNodesCount() const {
-        return m_aliveNodes.size();
-    }
+    size_t Application::getAliveNodesCount() const { return m_aliveNodes.size(); }
 
     size_t Application::getAliveNodesToDeleteCount() const {
         size_t count = 0;
@@ -136,9 +131,7 @@ namespace IRC {
         std::cout << "Node not found" << std::endl;
     }
 
-    void Application::registerAliveNode(Node* node) {
-        m_aliveNodes[node] = true;
-    }
+    void Application::registerAliveNode(Node* node) { m_aliveNodes[node] = true; }
 
     void Application::markToDelete(Node* node) {
         if (!m_aliveNodes.contains(node)) {
@@ -154,4 +147,4 @@ namespace IRC {
         m_aliveNodes.erase(node);
     }
 
-} // IRC
+} // namespace IRC

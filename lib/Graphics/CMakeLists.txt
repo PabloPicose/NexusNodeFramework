@@ -14,7 +14,6 @@ add_library(IRCGraphics STATIC
         src/Graphics/MainWindow.h
 )
 
-
 target_include_directories(IRCGraphics PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
