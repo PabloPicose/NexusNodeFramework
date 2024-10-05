@@ -1,7 +1,7 @@
 # tests with GTests
 
 find_package(GTest REQUIRED)
-enable_testing(true)
+enable_testing()
 
 add_executable(core_tests
         core_test.cpp

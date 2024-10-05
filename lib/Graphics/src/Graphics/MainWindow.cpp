@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
+#include "MainWindow.h"
 
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -44,7 +45,7 @@ namespace IRC {
 
         // glad: load all OpenGL function pointers
         // ---------------------------------------
-        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             std::cout << "Failed to initialize GLAD" << std::endl;
         }
     }
@@ -88,4 +89,8 @@ namespace IRC {
 
     bool MainWindow::shouldClose() const { return glfwWindowShouldClose(m_window); }
 
+    GLFWwindow* MainWindow::getWindow()
+    {
+        return m_window;
+    }
 } // namespace IRC

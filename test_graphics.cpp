@@ -1,8 +1,9 @@
 #include <glad/glad.h>
 
-#include "Graphics/MainWindow.h"
+#include "GUI/GUIWindow.h"
 
 #include "Core/Application.h"
+#include "imgui.h"
 
 using namespace IRC;
 int main() {
@@ -10,13 +11,8 @@ int main() {
 
     std::cout << app.getFullExecutablePath() << std::endl;
     //return 0;
-    MainWindow w;
-    w.show();
+    GUIWindow w;
+    //w.show();
 
-    do {
-
-        app.loopOnce();
-    } while (!w.shouldClose());
-
-    return 0;
+    return app.run();
 }

@@ -7,18 +7,16 @@
 #include "Core/Application.h"
 #include "Core/Node.h"
 #include "Core/NodePtr.h"
+#include "Core/Timer.h"
 
 using namespace IRC;
 
 class TestNode final : public Node {
 public:
-    explicit TestNode(Node* parent = nullptr) :
-        Node(parent) {
-    }
+    explicit TestNode(Node* parent = nullptr) : Node(parent) {}
 
 protected:
-    void update() override {
-    }
+    void update() override {}
 };
 
 class CoreFixture : public ::testing::Test {
@@ -62,7 +60,8 @@ TEST_F(CoreFixture, createApplicationInstance) {
 
 TEST_F(CoreFixture, createNodeRoot) {
     EXPECT_TRUE(Application::instance() != nullptr);
-    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0); {
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
+    {
         TestNode node;
         EXPECT_TRUE(node.parent() == nullptr);
         EXPECT_TRUE(node.childrenCount() == 0);
@@ -186,7 +185,8 @@ TEST_F(CoreFixture, nodePtrDeleteLater) {
     // The application should not be aware of the child to delete
     EXPECT_EQ(Application::instance()->getRootNodesToDeleteCount(), 0);
     EXPECT_EQ(parent->childrenToDeleteCount(), 1);
-    EXPECT_TRUE(parent->getChild(0)); {
+    EXPECT_TRUE(parent->getChild(0));
+    {
         NodePtr nodePtr(child);
         EXPECT_TRUE(nodePtr);
     }
@@ -208,13 +208,15 @@ TEST_F(CoreFixture, nodePtrDeleteLater) {
     EXPECT_TRUE(parent->isRoot());
     parent->deleteLater();
     EXPECT_EQ(Application::instance()->getRootNodesToDeleteCount(), 1);
-    EXPECT_EQ(Application::instance()->getRootNodesCount(), 1); {
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 1);
+    {
         NodePtr nodePtr(parent);
         EXPECT_TRUE(nodePtr);
     }
     Application::instance()->run();
     EXPECT_EQ(Application::instance()->getRootNodesToDeleteCount(), 0);
-    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0); {
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
+    {
         NodePtr nodePtr(parent);
         EXPECT_FALSE(nodePtr);
     }
@@ -287,5 +289,94 @@ TEST_F(CoreFixture, NodePtrFunctionality) {
     EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
     // and 0 nodes to delete
     EXPECT_EQ(Application::instance()->getRootNodesToDeleteCount(), 0);
-    EXPECT_EQ(Application::instance()->getAliveNodesCount() , 0);
+    EXPECT_EQ(Application::instance()->getAliveNodesCount(), 0);
+}
+
+// TEST Timer
+TEST_F(CoreFixture, TimerBasic) {
+    Timer timer;
+    ASSERT_TRUE(timer.isSingleShot());
+    ASSERT_EQ(timer.remainingTime(), 0);
+    ASSERT_EQ(timer.getInterval(), 0);
+    ASSERT_FALSE(timer.isRunning());
+}
+
+TEST_F(CoreFixture, TimerSingleShot) {
+
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
+    Timer timer;
+    timer.setSingleShot(true);
+    timer.setInterval(1000);
+    ASSERT_EQ(timer.getInterval(), 1000);
+    ASSERT_TRUE(timer.isSingleShot());
+    bool called = false;
+    timer.timeout.connect([&called]() { called = true; });
+    timer.start();
+    while (!called) {
+        Application::instance()->loopOnce();
+    }
+    ASSERT_TRUE(called);
+    // launch the timer again
+    called = false;
+    timer.start();
+    while (!called) {
+        Application::instance()->loopOnce();
+    }
+    ASSERT_TRUE(called);
+    // Timer to control in 2 seconds that the main timer does not call the function
+    // more than once
+    Timer controlTimer;
+    controlTimer.setInterval(2000);
+    controlTimer.setSingleShot(true);
+    bool calledControl = false;
+    controlTimer.timeout.connect([&calledControl]() { calledControl = true; });
+
+    int calledCount = 0;
+    timer.timeout.connect([&calledCount]() { calledCount++; });
+    timer.start();
+    controlTimer.start();
+
+    while (!calledControl) {
+        Application::instance()->loopOnce();
+    }
+    ASSERT_EQ(calledCount, 1);
+}
+
+TEST_F(CoreFixture, TimerMultipleShot) {
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
+    Timer timer;
+    timer.setSingleShot(false);
+    timer.setInterval(1000);
+    int count = 0;
+    timer.timeout.connect([&count]() { count++; });
+
+    bool controlCalled = false;
+    Timer controlTimer;
+    controlTimer.setInterval(2500);
+    controlTimer.setSingleShot(true);
+    controlTimer.timeout.connect([&controlCalled]() { controlCalled = true; });
+
+    timer.start();
+    controlTimer.start();
+    while (!controlCalled) {
+        Application::instance()->loopOnce();
+    }
+    ASSERT_EQ(count, 2);
+}
+
+TEST_F(CoreFixture, TimerSingleShotFunction) {
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
+    bool called = false;
+    Timer::singleShot(1000, [&called]() { called = true; });
+    while (!called) {
+        ASSERT_EQ(Application::instance()->getAliveNodesCount(), 1);
+        EXPECT_EQ(Application::instance()->getRootNodesCount(), 1);
+        Application::instance()->loopOnce();
+    }
+    // This 'loopOnce' call will delete the timer
+    Application::instance()->loopOnce();
+    ASSERT_TRUE(called);
+    // check that the timer is deleted
+    ASSERT_EQ(Application::instance()->getAliveNodesCount(), 0);
+    EXPECT_EQ(Application::instance()->getRootNodesCount(), 0);
 }

@@ -27,6 +27,8 @@ namespace IRC {
 
         bool shouldClose() const;
 
+        GLFWwindow* getWindow();
+
     private:
         void __processInput(GLFWwindow* window);
 

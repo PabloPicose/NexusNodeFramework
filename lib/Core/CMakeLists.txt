@@ -14,6 +14,8 @@ add_library(IRCCore STATIC
         src/Core/Node.h
         src/Core/NodePtr.cpp
         src/Core/NodePtr.h
+        src/Core/Timer.h
+        src/Core/Timer.cpp
 )
 
 target_precompile_headers(IRCCore PUBLIC
