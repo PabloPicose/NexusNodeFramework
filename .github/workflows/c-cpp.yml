@@ -20,6 +20,9 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+
     # Install and cache vcpkg
     - name: Setup vcpkg
       uses: actions/cache@v3
