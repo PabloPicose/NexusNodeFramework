@@ -13,6 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+
+    # Set up a specific Node.js version
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
     # Install and cache vcpkg
     - name: Setup vcpkg
       uses: actions/cache@v3
@@ -32,7 +39,7 @@ jobs:
     # Install dependencies
     - name: Install dependencies
       run: |
-        ./vcpkg/vcpkg install boost-signals glad
+        ./vcpkg/vcpkg install
 
     # Configure project with CMake and set toolchain file
     - name: Configure CMake
