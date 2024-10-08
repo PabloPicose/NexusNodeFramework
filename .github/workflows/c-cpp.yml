@@ -3,93 +3,99 @@ name: C/C++ CI
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - '**/*.cpp'
-      - '**/*.h'
-      - '**/CMakeLists.txt'
+    #paths:
+    #  - '**/*.cpp'
+    #  - '**/*.h'
+    #  - '**/CMakeLists.txt'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - '**/*.cpp'
-      - '**/*.h'
-      - '**/CMakeLists.txt'
+    #paths:
+    #  - '**/*.cpp'
+    #  - '**/*.h'
+    #  - '**/CMakeLists.txt'
 
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Set up a specific Node.js version
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Install system dependencies
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+
+      # Install and cache vcpkg
+      - name: Setup vcpkg
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./vcpkg
+            !./vcpkg/downloads
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/*.cpp', '**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
+      # Install vcpkg
+      - name: Install vcpkg
+        run: |
+          if [ ! -d "vcpkg" ]; then
+            git clone https://github.com/Microsoft/vcpkg.git
+          fi
+          ./vcpkg/bootstrap-vcpkg.sh
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          ./vcpkg/vcpkg install
+
+      # Configure project with CMake and set toolchain file
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake --build build
+
+      # Optionally run tests or other commands
+      - name: Execute tests
+        run: |
+          cmake --build build --target test
+
+  build-fedora:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    # Set up a specific Node.js version
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
+      - name: Install build tools and GLFW dependencies
+        run: |
+          dnf install -y gcc-c++ cmake make git tar curl zip unzip \
+                         glfw-devel mesa-libGL-devel mesa-libGLU-devel \
+                         libXinerama-devel libXcursor-devel xorg-x11-server-devel libXi-devel
 
-    - name: Install system dependencies
-      run: sudo apt-get update && sudo apt-get install -y libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+      - name: Install build tools and dependencies
+        run: |
+          dnf install -y gcc-c++ cmake make tar curl zip unzip git
 
-    # Install and cache vcpkg
-    - name: Setup vcpkg
-      uses: actions/cache@v3
-      with:
-        path: |
-          ./vcpkg
-          !./vcpkg/downloads
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/*.cpp', '**/*.h') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
+      - name: Install vcpkg
+        run: |
+          if [ ! -d "vcpkg" ]; then
+            git clone https://github.com/Microsoft/vcpkg.git
+          fi
+          ./vcpkg/bootstrap-vcpkg.sh
 
-    - name: Install vcpkg
-      run: |
-        if [ ! -d "vcpkg" ]; then
-          git clone https://github.com/Microsoft/vcpkg.git
-        fi
-        ./vcpkg/bootstrap-vcpkg.sh
+      - name: Install dependencies with vcpkg
+        run: |
+          ./vcpkg/vcpkg install
 
-    # Install dependencies
-    - name: Install dependencies
-      run: |
-        ./vcpkg/vcpkg install
-
-    # Configure project with CMake and set toolchain file
-    - name: Configure CMake
-      run: |
-        cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
-        cmake --build build
-
-    # Optionally run tests or other commands
-    - name: Execute tests
-      run: |
-        cmake --build build --target test
-
-    build-fedora:
-     runs-on: ubuntu-latest
-     container:
-       image: fedora:latest
-
-     steps:
-     - uses: actions/checkout@v4
-
-     - name: Install build tools and dependencies
-       run: |
-         dnf install -y gcc-c++ cmake make tar curl zip unzip git
-
-     - name: Install vcpkg
-       run: |
-         if [ ! -d "vcpkg" ]; then
-           git clone https://github.com/Microsoft/vcpkg.git
-         fi
-         ./vcpkg/bootstrap-vcpkg.sh
-
-     - name: Install dependencies with vcpkg
-       run: |
-         ./vcpkg/vcpkg install
-
-     - name: Build and Test
-       run: |
-         cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
-         cmake --build build
-         cmake --build build --target test
-
+      - name: Build and Test
+        run: |
+          cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake --build build
+          cmake --build build --target test
