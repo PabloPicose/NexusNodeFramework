@@ -3,16 +3,23 @@ name: C/C++ CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - '**/*.cpp'
+      - '**/*.h'
+      - '**/CMakeLists.txt'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - '**/*.cpp'
+      - '**/*.h'
+      - '**/CMakeLists.txt'
 
 jobs:
-  build:
+  build-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-
 
     # Set up a specific Node.js version
     - name: Setup Node.js
@@ -36,7 +43,9 @@ jobs:
 
     - name: Install vcpkg
       run: |
-        git clone https://github.com/Microsoft/vcpkg.git
+        if [ ! -d "vcpkg" ]; then
+          git clone https://github.com/Microsoft/vcpkg.git
+        fi
         ./vcpkg/bootstrap-vcpkg.sh
 
     # Install dependencies
@@ -54,3 +63,33 @@ jobs:
     - name: Execute tests
       run: |
         cmake --build build --target test
+
+    build-fedora:
+     runs-on: ubuntu-latest
+     container:
+       image: fedora:latest
+
+     steps:
+     - uses: actions/checkout@v4
+
+     - name: Install build tools and dependencies
+       run: |
+         dnf install -y gcc-c++ cmake make tar curl zip unzip git
+
+     - name: Install vcpkg
+       run: |
+         if [ ! -d "vcpkg" ]; then
+           git clone https://github.com/Microsoft/vcpkg.git
+         fi
+         ./vcpkg/bootstrap-vcpkg.sh
+
+     - name: Install dependencies with vcpkg
+       run: |
+         ./vcpkg/vcpkg install
+
+     - name: Build and Test
+       run: |
+         cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+         cmake --build build
+         cmake --build build --target test
+
