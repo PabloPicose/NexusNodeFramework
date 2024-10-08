@@ -76,7 +76,9 @@ jobs:
       - name: Install build tools and GLFW dependencies
         run: |
           dnf install -y gcc-c++ cmake make git tar curl zip unzip \
-                         libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+                         mesa-libGL-devel mesa-libGLU-devel \
+                         libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel \
+                         glfw-devel
 
       - name: Install build tools and dependencies
         run: |
