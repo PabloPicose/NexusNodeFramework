@@ -1,14 +1,16 @@
 {
   "dependencies": [
     "boost-signals2",
-    "boost-asio",
     "gtest",
     "glfw3",
     "glad",
     "glm",
     {
       "name": "imgui",
-      "features" : ["glfw-binding", "opengl3-binding"]
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
     }
   ]
 }

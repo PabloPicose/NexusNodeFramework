@@ -4,7 +4,7 @@ project(IRCCore)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Boost REQUIRED COMPONENTS signals2 asio)
+find_package(Boost REQUIRED COMPONENTS signals2)
 
 add_library(IRCCore STATIC
         src/Core/Application.cpp
@@ -26,4 +26,4 @@ target_include_directories(IRCCore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(IRCCore PUBLIC Boost::signals2 Boost::asio)
+target_link_libraries(IRCCore PUBLIC Boost::signals2)
